@@ -1,0 +1,38 @@
+name: Publish 🚀
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+    - main
+
+env:
+  AZURE_WEBAPP_NAME: 3rdparty-api6
+  AZURE_WEBAPP_PACKAGE_PATH: "./publish"
+  CONFIGURATION: Release
+  
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: action/checkout@v3
+      
+      - name: Setup .NET API 6
+        uses: action/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.x'
+      
+      - name: Restore
+        run: dotnet restore ./3rdPartyAPI/3rdPartyAPI.sln
+        
+      - name: Build
+        run: dotnet build ./3rdPartyAPI/3rdPartyAPI.sln --configuration ${{ env.CONFIGURATION }} --no-restore
+        
+      - name: Test
+        run: dotnet test ./3rdPartyAPITest/3rdPartyAPITest.csproj --configuration ${{ env.CONFIGURATION }} --no-build
+      
+      - name: Publish
+        run: dotnet publish ./3rdPartyAPI/3rdPartyAPI.csproj --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
+      
+        
